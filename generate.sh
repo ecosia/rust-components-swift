@@ -17,7 +17,7 @@ APP_SERVICES_DIR="$THIS_DIR/application-services"
 fi
 
 UNIFFI_BINDGEN=(cargo run --manifest-path "$APP_SERVICES_DIR/tools/embedded-uniffi-bindgen/Cargo.toml")
-GLEAN_GENERATOR="$APP_SERVICES_DIR/components/external/glean/glean-core/ios/sdk_generator.sh"
+# Ecosia: GLEAN_GENERATOR="$APP_SERVICES_DIR/components/external/glean/glean-core/ios/sdk_generator.sh"
 
 set -euvx
 
@@ -31,8 +31,7 @@ rm -rf "$FOCUS_DIR" && mkdir -p "$FOCUS_DIR"
 # Glean metrics.
 # Run this first, because it appears to delete any other .swift files in the output directory.
 # Also, it wants to be run from inside Xcode, so we set some env vars to fake it out.
-SOURCE_ROOT="$THIS_DIR" PROJECT="MozillaAppServices" "$GLEAN_GENERATOR" -o "$OUT_DIR/Generated/Metrics/" "$APP_SERVICES_DIR/components/nimbus/metrics.yaml"
-
+# Ecosia: SOURCE_ROOT="$THIS_DIR" PROJECT="MozillaAppServices" "$GLEAN_GENERATOR" -o "$OUT_DIR/Generated/Metrics/" "$APP_SERVICES_DIR/components/nimbus/metrics.yaml"
 
 
 ###
@@ -157,9 +156,7 @@ cp -r "$APP_SERVICES_DIR/components/viaduct/ios/" $OUT_DIR
 # Glean metrics.
 # Run this first, because it appears to delete any other .swift files in the output directory.
 # Also, it wants to be run from inside Xcode, so we set some env vars to fake it out.
-SOURCE_ROOT="$THIS_DIR" PROJECT="FocusAppServices" "$GLEAN_GENERATOR" -o "$FOCUS_DIR/Generated/Metrics/" "$APP_SERVICES_DIR/components/nimbus/metrics.yaml"
-
-
+# Ecosia: SOURCE_ROOT="$THIS_DIR" PROJECT="FocusAppServices" "$GLEAN_GENERATOR" -o "$FOCUS_DIR/Generated/Metrics/" "$APP_SERVICES_DIR/components/nimbus/metrics.yaml"
 
 ###
 #

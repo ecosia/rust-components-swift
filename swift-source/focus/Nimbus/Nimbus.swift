@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
-import Glean
+// Ecosia: import Glean
 
 public class Nimbus: NimbusApi {
     private let nimbusClient: NimbusClientProtocol
@@ -92,10 +92,12 @@ extension Nimbus: FeaturesInterface {
             // Finally, if we do have an experiment for the given featureId, we will record the
             // exposure event in Glean. This is to protect against accidentally recording an event
             // for an experiment without an active enrollment.
+            /* Ecosia: Removing Glean References
             GleanMetrics.NimbusEvents.exposure.record(GleanMetrics.NimbusEvents.ExposureExtra(
                 branch: experiment.branchSlug,
                 experiment: experiment.slug
             ))
+             */
         }
     }
 
@@ -125,6 +127,7 @@ extension Nimbus: FeaturesInterface {
     }
 
     internal func recordExperimentEvents(_ events: [EnrollmentChangeEvent]) {
+        /* Ecosia: Removing Glean References
         for event in events {
             switch event.change {
             case .enrollment:
@@ -159,6 +162,7 @@ extension Nimbus: FeaturesInterface {
                 ))
             }
         }
+         */
     }
 
     internal func getFeatureConfigVariablesJson(featureId: String) -> [String: Any]? {
@@ -168,11 +172,13 @@ extension Nimbus: FeaturesInterface {
             }
             return try Dictionary.parse(jsonString: string)
         } catch NimbusError.DatabaseNotReady {
+            /* Ecosia: Removing Glean References
             GleanMetrics.NimbusHealth.cacheNotReadyForFeature.record(
                 GleanMetrics.NimbusHealth.CacheNotReadyForFeatureExtra(
                     featureId: featureId
                 )
             )
+             */
             return nil
         } catch {
             errorReporter(error)

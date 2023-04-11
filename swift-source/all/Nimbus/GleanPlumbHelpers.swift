@@ -3,6 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
+
+#if canImport(Glean)
+
 import Glean
 
 /**
@@ -71,3 +74,5 @@ internal class NonStringHelper: NimbusStringHelperProtocol {
         template
     }
 }
+
+#endif
