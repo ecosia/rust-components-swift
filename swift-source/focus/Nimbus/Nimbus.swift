@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
-import Glean
+// Ecosia: import Glean
 
 public class Nimbus: NimbusInterface {
     private let _userDefaults: UserDefaults?
@@ -148,6 +148,7 @@ extension Nimbus: FeaturesInterface {
     }
 
     func recordExperimentEvents(_ events: [EnrollmentChangeEvent]) {
+        /* Ecosia: Removing Glean References
         for event in events {
             switch event.change {
             case .enrollment:
@@ -179,6 +180,7 @@ extension Nimbus: FeaturesInterface {
                 ))
             }
         }
+         */
     }
 
     func getFeatureConfigVariablesJson(featureId: String) -> [String: Any]? {
@@ -188,11 +190,13 @@ extension Nimbus: FeaturesInterface {
             }
             return try Dictionary.parse(jsonString: string)
         } catch NimbusError.DatabaseNotReady {
+            /* Ecosia: Removing Glean References
             GleanMetrics.NimbusHealth.cacheNotReadyForFeature.record(
                 GleanMetrics.NimbusHealth.CacheNotReadyForFeatureExtra(
                     featureId: featureId
                 )
             )
+             */
             return nil
         } catch {
             errorReporter(error)
