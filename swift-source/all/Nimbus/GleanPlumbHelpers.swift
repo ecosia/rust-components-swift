@@ -3,10 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
-
-#if canImport(Glean)
-
-import Glean
+// Ecosia: import Glean
 
 /**
  * Instances of this class are useful for implementing a messaging service based upon
@@ -74,5 +71,3 @@ internal class NonStringHelper: NimbusStringHelperProtocol {
         template
     }
 }
-
-#endif

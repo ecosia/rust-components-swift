@@ -32,7 +32,7 @@ rm -rf "$FOCUS_DIR" && mkdir -p "$FOCUS_DIR"
 # Run this first, because it appears to delete any other .swift files in the output directory.
 # Also, it wants to be run from inside Xcode, so we set some env vars to fake it out.
 # Ecosia: SOURCE_ROOT="$THIS_DIR" PROJECT="MozillaAppServices" "$GLEAN_GENERATOR" -o "$OUT_DIR/Generated/Metrics/" "$APP_SERVICES_DIR/components/nimbus/metrics.yaml"
-
+ SOURCE_ROOT="$THIS_DIR" PROJECT="MozillaAppServices"
 
 ###
 #
@@ -157,6 +157,7 @@ cp -r "$APP_SERVICES_DIR/components/viaduct/ios/" $OUT_DIR
 # Run this first, because it appears to delete any other .swift files in the output directory.
 # Also, it wants to be run from inside Xcode, so we set some env vars to fake it out.
 # Ecosia: SOURCE_ROOT="$THIS_DIR" PROJECT="FocusAppServices" "$GLEAN_GENERATOR" -o "$FOCUS_DIR/Generated/Metrics/" "$APP_SERVICES_DIR/components/nimbus/metrics.yaml"
+SOURCE_ROOT="$THIS_DIR" PROJECT="FocusAppServices"
 
 ###
 #
