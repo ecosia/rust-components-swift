@@ -243,17 +243,21 @@ extension Nimbus {
     }
 
     func fetchExperimentsOnThisThread() throws {
+        /* Ecosia
         try GleanMetrics.NimbusHealth.fetchExperimentsTime.measure {
             try nimbusClient.fetchExperiments()
         }
+         */
         notifyOnExperimentsFetched()
     }
 
     func applyPendingExperimentsOnThisThread() throws {
+        /* Ecosia
         let changes = try GleanMetrics.NimbusHealth.applyPendingExperimentsTime.measure {
             try nimbusClient.applyPendingExperiments()
         }
         postEnrollmentCalculation(changes)
+         */
     }
 
     func setExperimentsLocallyOnThisThread(_ experimentsJson: String) throws {
