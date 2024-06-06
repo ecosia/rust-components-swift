@@ -138,6 +138,7 @@ extension Nimbus: FeaturesInterface {
     }
 
     func recordExperimentTelemetry(_ experiments: [EnrolledExperiment]) {
+        /* Ecosia: Removing Glean References
         for experiment in experiments {
             Glean.shared.setExperimentActive(
                 experiment.slug,
@@ -145,6 +146,7 @@ extension Nimbus: FeaturesInterface {
                 extra: nil
             )
         }
+         */
     }
 
     func recordExperimentEvents(_ events: [EnrollmentChangeEvent]) {
@@ -241,17 +243,21 @@ extension Nimbus {
     }
 
     func fetchExperimentsOnThisThread() throws {
+        /* Ecosia: Removing Glean References
         try GleanMetrics.NimbusHealth.fetchExperimentsTime.measure {
             try nimbusClient.fetchExperiments()
         }
+         */
         notifyOnExperimentsFetched()
     }
 
     func applyPendingExperimentsOnThisThread() throws {
+        /* Ecosia: Removing Glean References
         let changes = try GleanMetrics.NimbusHealth.applyPendingExperimentsTime.measure {
             try nimbusClient.applyPendingExperiments()
         }
         postEnrollmentCalculation(changes)
+         */
     }
 
     func setExperimentsLocallyOnThisThread(_ experimentsJson: String) throws {

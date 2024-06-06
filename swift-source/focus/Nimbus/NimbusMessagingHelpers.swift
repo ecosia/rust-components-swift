@@ -82,5 +82,3 @@ class EchoStringHelper: NimbusStringHelperProtocol {
         template
     }
 }
-
-#endif
