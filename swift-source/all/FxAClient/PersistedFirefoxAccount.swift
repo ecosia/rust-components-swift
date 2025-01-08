@@ -7,8 +7,6 @@ import Foundation
     import MozillaRustComponents
 #endif
 
-// swiftlint:disable type_body_length
-
 /// This class inherits from the Rust `FirefoxAccount` and adds:
 /// - Automatic state persistence through `PersistCallback`.
 /// - Auth error signaling through observer notifications.
@@ -30,21 +28,18 @@ class PersistedFirefoxAccount {
         self.inner = inner
     }
 
-    public convenience init(config: FxAConfig) {
-        self.init(inner: FirefoxAccount(contentUrl: config.contentUrl,
-                                        clientId: config.clientId,
-                                        redirectUri: config.redirectUri,
-                                        tokenServerUrlOverride: config.tokenServerUrlOverride))
+    public convenience init(config: FxaConfig) {
+        self.init(inner: FirefoxAccount(config: config))
     }
 
-    /// Registers a persistance callback. The callback will get called every time
+    /// Registers a persistence callback. The callback will get called every time
     /// the `FxAccounts` state needs to be saved. The callback must
     /// persist the passed string in a secure location (like the keychain).
     public func registerPersistCallback(_ cb: PersistCallback) {
         persistCallback = cb
     }
 
-    /// Unregisters a persistance callback.
+    /// Unregisters a persistence callback.
     public func unregisterPersistCallback() {
         persistCallback = nil
     }
@@ -57,16 +52,19 @@ class PersistedFirefoxAccount {
         try inner.toJson()
     }
 
+    public func setUserData(userData: UserData) {
+        defer { tryPersistState() }
+        inner.setUserData(userData: userData)
+    }
+
     public func beginOAuthFlow(
         scopes: [String],
-        entrypoint: String,
-        metrics: MetricsParams = MetricsParams(parameters: [:])
+        entrypoint: String
     ) throws -> URL {
         return try notifyAuthErrors {
             try URL(string: self.inner.beginOauthFlow(
                 scopes: scopes,
-                entrypoint: entrypoint,
-                metrics: metrics
+                entrypoint: entrypoint
             ))!
         }
     }
@@ -78,14 +76,12 @@ class PersistedFirefoxAccount {
     public func beginPairingFlow(
         pairingUrl: String,
         scopes: [String],
-        entrypoint: String,
-        metrics: MetricsParams = MetricsParams(parameters: [:])
+        entrypoint: String
     ) throws -> URL {
         return try notifyAuthErrors {
             try URL(string: self.inner.beginPairingFlow(pairingUrl: pairingUrl,
                                                         scopes: scopes,
-                                                        entrypoint: entrypoint,
-                                                        metrics: metrics))!
+                                                        entrypoint: entrypoint))!
         }
     }
 
@@ -173,7 +169,7 @@ class PersistedFirefoxAccount {
         }
     }
 
-    public func handlePushMessage(payload: String) throws -> [AccountEvent] {
+    public func handlePushMessage(payload: String) throws -> AccountEvent {
         defer { tryPersistState() }
         return try notifyAuthErrors {
             try self.inner.handlePushMessage(payload: payload)
@@ -190,6 +186,12 @@ class PersistedFirefoxAccount {
     public func sendSingleTab(targetDeviceId: String, title: String, url: String) throws {
         return try notifyAuthErrors {
             try self.inner.sendSingleTab(targetDeviceId: targetDeviceId, title: title, url: url)
+        }
+    }
+
+    public func closeTabs(targetDeviceId: String, urls: [String]) throws -> CloseTabsResult {
+        return try notifyAuthErrors {
+            try self.inner.closeTabs(targetDeviceId: targetDeviceId, urls: urls)
         }
     }
 
@@ -248,58 +250,6 @@ class PersistedFirefoxAccount {
         }
     }
 
-    // TODO: not sure why we switched to returning a bool for the Swift wrapper here,
-    // we should review and see if we can make it consistent with Rust and Kotlin.
-
-    public func migrateFromSessionToken(
-        sessionToken: String,
-        kSync: String,
-        kXCS: String,
-        copySessionToken: Bool
-    ) -> Bool {
-        defer { tryPersistState() }
-        do {
-            _ = try inner.migrateFromSessionToken(sessionToken: sessionToken,
-                                                  kSync: kSync,
-                                                  kXcs: kXCS,
-                                                  copySessionToken: copySessionToken)
-            return true
-        } catch {
-            FxALog.error("migrateFromSessionToken error: \(error).")
-            reportAccountMigrationError(error)
-            return false
-        }
-    }
-
-    public func retryMigrateFromSessionToken() -> Bool {
-        defer { tryPersistState() }
-        do {
-            _ = try inner.retryMigrateFromSessionToken()
-            return true
-        } catch {
-            FxALog.error("retryMigrateFromSessionToken error: \(error).")
-            reportAccountMigrationError(error)
-            return false
-        }
-    }
-
-    internal func reportAccountMigrationError(_ error: Error) {
-        // Not in migration state after throwing during migration == unrecoverable error.
-        if isInMigrationState() {
-            DispatchQueue.main.async {
-                NotificationCenter.default.post(
-                    name: .accountMigrationFailed,
-                    object: nil,
-                    userInfo: ["error": error]
-                )
-            }
-        }
-    }
-
-    public func isInMigrationState() -> Bool {
-        return inner.isInMigrationState() != .none
-    }
-
     private func tryPersistState() {
         guard let cb = persistCallback else {
             return
@@ -314,7 +264,7 @@ class PersistedFirefoxAccount {
         }
     }
 
-    internal func notifyAuthErrors<T>(_ cb: () throws -> T) rethrows -> T {
+    func notifyAuthErrors<T>(_ cb: () throws -> T) rethrows -> T {
         do {
             return try cb()
         } catch let error as FxaError {
@@ -326,7 +276,7 @@ class PersistedFirefoxAccount {
         }
     }
 
-    internal func notifyAuthError() {
+    func notifyAuthError() {
         NotificationCenter.default.post(name: .accountAuthException, object: nil)
     }
 }
@@ -334,5 +284,3 @@ class PersistedFirefoxAccount {
 public protocol PersistCallback {
     func persist(json: String)
 }
-
-// swiftlint:enable type_body_length

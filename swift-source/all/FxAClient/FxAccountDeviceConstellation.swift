@@ -13,6 +13,11 @@ public struct ConstellationState {
     public let remoteDevices: [Device]
 }
 
+public enum SendEventError: Error {
+    case tabsNotClosed(urls: [String])
+    case other(Error)
+}
+
 public class DeviceConstellation {
     var constellationState: ConstellationState?
     let account: PersistedFirefoxAccount
@@ -87,16 +92,29 @@ public class DeviceConstellation {
     }
 
     /// Send an event to another device such as Send Tab.
-    public func sendEventToDevice(targetDeviceId: String, e: DeviceEventOutgoing) {
+    public func sendEventToDevice(targetDeviceId: String,
+                                  e: DeviceEventOutgoing,
+                                  completionHandler: ((Result<Void, SendEventError>) -> Void)? = nil)
+    {
         DispatchQueue.global().async {
             do {
                 switch e {
                 case let .sendTab(title, url): do {
                         try self.account.sendSingleTab(targetDeviceId: targetDeviceId, title: title, url: url)
+                        completionHandler?(.success(()))
+                    }
+                case let .closeTabs(urls):
+                    let result = try self.account.closeTabs(targetDeviceId: targetDeviceId, urls: urls)
+                    switch result {
+                    case .ok:
+                        completionHandler?(.success(()))
+                    case let .tabsNotClosed(urls):
+                        completionHandler?(.failure(.tabsNotClosed(urls: urls)))
                     }
                 }
             } catch {
                 FxALog.error("Error sending event to another device: \(error).")
+                completionHandler?(.failure(.other(error)))
             }
         }
     }
@@ -113,15 +131,15 @@ public class DeviceConstellation {
     }
 
     /// Once Push has decrypted a payload, send the payload to this method
-    /// which will tell the app what to do with it in form of `DeviceEvents`.
-    public func processRawIncomingAccountEvent(pushPayload: String,
-                                               completionHandler: @escaping (Result<[AccountEvent], Error>) -> Void)
+    /// which will tell the app what to do with it in form of  an `AccountEvent`.
+    public func handlePushMessage(pushPayload: String,
+                                  completionHandler: @escaping (Result<AccountEvent, Error>) -> Void)
     {
         DispatchQueue.global().async {
             do {
-                let events = try self.account.handlePushMessage(payload: pushPayload)
-                self.processAccountEvents(events)
-                DispatchQueue.main.async { completionHandler(.success(events)) }
+                let event = try self.account.handlePushMessage(payload: pushPayload)
+                self.processAccountEvent(event)
+                DispatchQueue.main.async { completionHandler(.success(event)) }
             } catch {
                 DispatchQueue.main.async { completionHandler(.failure(error)) }
             }
@@ -130,19 +148,14 @@ public class DeviceConstellation {
 
     /// This allows us to be helpful in certain circumstances e.g. refreshing the device list
     /// if we see a "device disconnected" push notification.
-    internal func processAccountEvents(_ events: [AccountEvent]) {
-        let shouldRefreshDevices = events.contains { evt in
-            switch evt {
-            case .deviceDisconnected, .deviceConnected: return true
-            default: return false
-            }
-        }
-        if shouldRefreshDevices {
-            refreshState()
+    func processAccountEvent(_ event: AccountEvent) {
+        switch event {
+        case .deviceDisconnected, .deviceConnected: refreshState()
+        default: return
         }
     }
 
-    internal func initDevice(name: String, type: DeviceType, capabilities: [DeviceCapability]) {
+    func initDevice(name: String, type: DeviceType, capabilities: [DeviceCapability]) {
         // This method is called by `FxAccountManager` on its own asynchronous queue, hence
         // no wrapping in a `DispatchQueue.global().async`.
         assert(!Thread.isMainThread)
@@ -153,7 +166,7 @@ public class DeviceConstellation {
         }
     }
 
-    internal func ensureCapabilities(capabilities: [DeviceCapability]) {
+    func ensureCapabilities(capabilities: [DeviceCapability]) {
         // This method is called by `FxAccountManager` on its own asynchronous queue, hence
         // no wrapping in a `DispatchQueue.global().async`.
         assert(!Thread.isMainThread)
@@ -167,4 +180,5 @@ public class DeviceConstellation {
 
 public enum DeviceEventOutgoing {
     case sendTab(title: String, url: String)
+    case closeTabs(urls: [String])
 }

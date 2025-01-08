@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 // The following structs are used to implement the lowest level
@@ -23,12 +24,10 @@
 
 typedef struct RustBuffer
 {
-    int32_t capacity;
-    int32_t len;
+    uint64_t capacity;
+    uint64_t len;
     uint8_t *_Nullable data;
 } RustBuffer;
-
-typedef int32_t (*ForeignCallback)(uint64_t, int32_t, RustBuffer, RustBuffer *_Nonnull);
 
 typedef struct ForeignBytes
 {
@@ -45,116 +44,728 @@ typedef struct RustCallStatus {
 // ⚠️ Attention: If you change this #else block (ending in `#endif // def UNIFFI_SHARED_H`) you *must* ⚠️
 // ⚠️ increment the version suffix in all instances of UNIFFI_SHARED_HEADER_V4 in this file.           ⚠️
 #endif // def UNIFFI_SHARED_H
+#ifndef UNIFFI_FFIDEF_RUST_FUTURE_CONTINUATION_CALLBACK
+#define UNIFFI_FFIDEF_RUST_FUTURE_CONTINUATION_CALLBACK
+typedef void (*UniffiRustFutureContinuationCallback)(uint64_t, int8_t
+    );
 
-void ffi_logins_ab26_LoginStore_object_free(
-      void*_Nonnull ptr,
-    RustCallStatus *_Nonnull out_status
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_FREE
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_FREE
+typedef void (*UniffiForeignFutureFree)(uint64_t
     );
-void*_Nonnull logins_ab26_LoginStore_new(
-      RustBuffer path,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_CALLBACK_INTERFACE_FREE
+#define UNIFFI_FFIDEF_CALLBACK_INTERFACE_FREE
+typedef void (*UniffiCallbackInterfaceFree)(uint64_t
     );
-RustBuffer logins_ab26_LoginStore_add(
-      void*_Nonnull ptr,RustBuffer login,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE
+typedef struct UniffiForeignFuture {
+    uint64_t handle;
+    UniffiForeignFutureFree _Nonnull free;
+} UniffiForeignFuture;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U8
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U8
+typedef struct UniffiForeignFutureStructU8 {
+    uint8_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructU8;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U8
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U8
+typedef void (*UniffiForeignFutureCompleteU8)(uint64_t, UniffiForeignFutureStructU8
     );
-RustBuffer logins_ab26_LoginStore_update(
-      void*_Nonnull ptr,RustBuffer id,RustBuffer login,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I8
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I8
+typedef struct UniffiForeignFutureStructI8 {
+    int8_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructI8;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I8
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I8
+typedef void (*UniffiForeignFutureCompleteI8)(uint64_t, UniffiForeignFutureStructI8
     );
-RustBuffer logins_ab26_LoginStore_add_or_update(
-      void*_Nonnull ptr,RustBuffer login,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U16
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U16
+typedef struct UniffiForeignFutureStructU16 {
+    uint16_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructU16;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U16
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U16
+typedef void (*UniffiForeignFutureCompleteU16)(uint64_t, UniffiForeignFutureStructU16
     );
-int8_t logins_ab26_LoginStore_delete(
-      void*_Nonnull ptr,RustBuffer id,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I16
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I16
+typedef struct UniffiForeignFutureStructI16 {
+    int16_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructI16;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I16
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I16
+typedef void (*UniffiForeignFutureCompleteI16)(uint64_t, UniffiForeignFutureStructI16
     );
-void logins_ab26_LoginStore_wipe(
-      void*_Nonnull ptr,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U32
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U32
+typedef struct UniffiForeignFutureStructU32 {
+    uint32_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructU32;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U32
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U32
+typedef void (*UniffiForeignFutureCompleteU32)(uint64_t, UniffiForeignFutureStructU32
     );
-void logins_ab26_LoginStore_wipe_local(
-      void*_Nonnull ptr,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I32
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I32
+typedef struct UniffiForeignFutureStructI32 {
+    int32_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructI32;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I32
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I32
+typedef void (*UniffiForeignFutureCompleteI32)(uint64_t, UniffiForeignFutureStructI32
     );
-void logins_ab26_LoginStore_reset(
-      void*_Nonnull ptr,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U64
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_U64
+typedef struct UniffiForeignFutureStructU64 {
+    uint64_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructU64;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U64
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_U64
+typedef void (*UniffiForeignFutureCompleteU64)(uint64_t, UniffiForeignFutureStructU64
     );
-void logins_ab26_LoginStore_touch(
-      void*_Nonnull ptr,RustBuffer id,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I64
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_I64
+typedef struct UniffiForeignFutureStructI64 {
+    int64_t returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructI64;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I64
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_I64
+typedef void (*UniffiForeignFutureCompleteI64)(uint64_t, UniffiForeignFutureStructI64
     );
-RustBuffer logins_ab26_LoginStore_list(
-      void*_Nonnull ptr,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_F32
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_F32
+typedef struct UniffiForeignFutureStructF32 {
+    float returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructF32;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_F32
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_F32
+typedef void (*UniffiForeignFutureCompleteF32)(uint64_t, UniffiForeignFutureStructF32
     );
-RustBuffer logins_ab26_LoginStore_get_by_base_domain(
-      void*_Nonnull ptr,RustBuffer base_domain,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_F64
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_F64
+typedef struct UniffiForeignFutureStructF64 {
+    double returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructF64;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_F64
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_F64
+typedef void (*UniffiForeignFutureCompleteF64)(uint64_t, UniffiForeignFutureStructF64
     );
-RustBuffer logins_ab26_LoginStore_find_login_to_update(
-      void*_Nonnull ptr,RustBuffer look,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_POINTER
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_POINTER
+typedef struct UniffiForeignFutureStructPointer {
+    void*_Nonnull returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructPointer;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_POINTER
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_POINTER
+typedef void (*UniffiForeignFutureCompletePointer)(uint64_t, UniffiForeignFutureStructPointer
     );
-RustBuffer logins_ab26_LoginStore_get(
-      void*_Nonnull ptr,RustBuffer id,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_RUST_BUFFER
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_RUST_BUFFER
+typedef struct UniffiForeignFutureStructRustBuffer {
+    RustBuffer returnValue;
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructRustBuffer;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_RUST_BUFFER
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_RUST_BUFFER
+typedef void (*UniffiForeignFutureCompleteRustBuffer)(uint64_t, UniffiForeignFutureStructRustBuffer
     );
-void logins_ab26_LoginStore_register_with_sync_manager(
-      void*_Nonnull ptr,
-    RustCallStatus *_Nonnull out_status
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_VOID
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_STRUCT_VOID
+typedef struct UniffiForeignFutureStructVoid {
+    RustCallStatus callStatus;
+} UniffiForeignFutureStructVoid;
+
+#endif
+#ifndef UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_VOID
+#define UNIFFI_FFIDEF_FOREIGN_FUTURE_COMPLETE_VOID
+typedef void (*UniffiForeignFutureCompleteVoid)(uint64_t, UniffiForeignFutureStructVoid
     );
-RustBuffer logins_ab26_LoginStore_sync(
-      void*_Nonnull ptr,RustBuffer key_id,RustBuffer access_token,RustBuffer sync_key,RustBuffer tokenserver_url,RustBuffer local_encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer logins_ab26_create_key(
-      
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer logins_ab26_decrypt_login(
-      RustBuffer login,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer logins_ab26_encrypt_login(
-      RustBuffer login,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer logins_ab26_decrypt_fields(
-      RustBuffer sec_fields,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer logins_ab26_encrypt_fields(
-      RustBuffer sec_fields,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer logins_ab26_create_canary(
-      RustBuffer text,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-int8_t logins_ab26_check_canary(
-      RustBuffer canary,RustBuffer text,RustBuffer encryption_key,
-    RustCallStatus *_Nonnull out_status
-    );
-void logins_ab26_migrate_logins(
-      RustBuffer path,RustBuffer new_encryption_key,RustBuffer sqlcipher_path,RustBuffer sqlcipher_key,RustBuffer salt,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer ffi_logins_ab26_rustbuffer_alloc(
-      int32_t size,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer ffi_logins_ab26_rustbuffer_from_bytes(
-      ForeignBytes bytes,
-    RustCallStatus *_Nonnull out_status
-    );
-void ffi_logins_ab26_rustbuffer_free(
-      RustBuffer buf,
-    RustCallStatus *_Nonnull out_status
-    );
-RustBuffer ffi_logins_ab26_rustbuffer_reserve(
-      RustBuffer buf,int32_t additional,
-    RustCallStatus *_Nonnull out_status
-    );
+
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_CLONE_LOGINSTORE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_CLONE_LOGINSTORE
+void*_Nonnull uniffi_logins_fn_clone_loginstore(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FREE_LOGINSTORE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FREE_LOGINSTORE
+void uniffi_logins_fn_free_loginstore(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_CONSTRUCTOR_LOGINSTORE_NEW
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_CONSTRUCTOR_LOGINSTORE_NEW
+void*_Nonnull uniffi_logins_fn_constructor_loginstore_new(RustBuffer path, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_ADD
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_ADD
+RustBuffer uniffi_logins_fn_method_loginstore_add(void*_Nonnull ptr, RustBuffer login, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_ADD_OR_UPDATE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_ADD_OR_UPDATE
+RustBuffer uniffi_logins_fn_method_loginstore_add_or_update(void*_Nonnull ptr, RustBuffer login, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_DELETE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_DELETE
+int8_t uniffi_logins_fn_method_loginstore_delete(void*_Nonnull ptr, RustBuffer id, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_FIND_LOGIN_TO_UPDATE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_FIND_LOGIN_TO_UPDATE
+RustBuffer uniffi_logins_fn_method_loginstore_find_login_to_update(void*_Nonnull ptr, RustBuffer look, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_GET
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_GET
+RustBuffer uniffi_logins_fn_method_loginstore_get(void*_Nonnull ptr, RustBuffer id, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_GET_BY_BASE_DOMAIN
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_GET_BY_BASE_DOMAIN
+RustBuffer uniffi_logins_fn_method_loginstore_get_by_base_domain(void*_Nonnull ptr, RustBuffer base_domain, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_LIST
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_LIST
+RustBuffer uniffi_logins_fn_method_loginstore_list(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_REGISTER_WITH_SYNC_MANAGER
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_REGISTER_WITH_SYNC_MANAGER
+void uniffi_logins_fn_method_loginstore_register_with_sync_manager(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_RESET
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_RESET
+void uniffi_logins_fn_method_loginstore_reset(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_TOUCH
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_TOUCH
+void uniffi_logins_fn_method_loginstore_touch(void*_Nonnull ptr, RustBuffer id, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_UPDATE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_UPDATE
+RustBuffer uniffi_logins_fn_method_loginstore_update(void*_Nonnull ptr, RustBuffer id, RustBuffer login, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_WIPE_LOCAL
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_METHOD_LOGINSTORE_WIPE_LOCAL
+void uniffi_logins_fn_method_loginstore_wipe_local(void*_Nonnull ptr, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_CHECK_CANARY
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_CHECK_CANARY
+int8_t uniffi_logins_fn_func_check_canary(RustBuffer canary, RustBuffer text, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_CREATE_CANARY
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_CREATE_CANARY
+RustBuffer uniffi_logins_fn_func_create_canary(RustBuffer text, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_CREATE_KEY
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_CREATE_KEY
+RustBuffer uniffi_logins_fn_func_create_key(RustCallStatus *_Nonnull out_status
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_DECRYPT_FIELDS
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_DECRYPT_FIELDS
+RustBuffer uniffi_logins_fn_func_decrypt_fields(RustBuffer sec_fields, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_DECRYPT_LOGIN
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_DECRYPT_LOGIN
+RustBuffer uniffi_logins_fn_func_decrypt_login(RustBuffer login, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_ENCRYPT_FIELDS
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_ENCRYPT_FIELDS
+RustBuffer uniffi_logins_fn_func_encrypt_fields(RustBuffer sec_fields, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_ENCRYPT_LOGIN
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_FN_FUNC_ENCRYPT_LOGIN
+RustBuffer uniffi_logins_fn_func_encrypt_login(RustBuffer login, RustBuffer encryption_key, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_ALLOC
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_ALLOC
+RustBuffer ffi_logins_rustbuffer_alloc(uint64_t size, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_FROM_BYTES
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_FROM_BYTES
+RustBuffer ffi_logins_rustbuffer_from_bytes(ForeignBytes bytes, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_FREE
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_FREE
+void ffi_logins_rustbuffer_free(RustBuffer buf, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_RESERVE
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUSTBUFFER_RESERVE
+RustBuffer ffi_logins_rustbuffer_reserve(RustBuffer buf, uint64_t additional, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U8
+void ffi_logins_rust_future_poll_u8(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U8
+void ffi_logins_rust_future_cancel_u8(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U8
+void ffi_logins_rust_future_free_u8(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U8
+uint8_t ffi_logins_rust_future_complete_u8(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I8
+void ffi_logins_rust_future_poll_i8(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I8
+void ffi_logins_rust_future_cancel_i8(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I8
+void ffi_logins_rust_future_free_i8(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I8
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I8
+int8_t ffi_logins_rust_future_complete_i8(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U16
+void ffi_logins_rust_future_poll_u16(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U16
+void ffi_logins_rust_future_cancel_u16(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U16
+void ffi_logins_rust_future_free_u16(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U16
+uint16_t ffi_logins_rust_future_complete_u16(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I16
+void ffi_logins_rust_future_poll_i16(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I16
+void ffi_logins_rust_future_cancel_i16(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I16
+void ffi_logins_rust_future_free_i16(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I16
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I16
+int16_t ffi_logins_rust_future_complete_i16(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U32
+void ffi_logins_rust_future_poll_u32(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U32
+void ffi_logins_rust_future_cancel_u32(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U32
+void ffi_logins_rust_future_free_u32(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U32
+uint32_t ffi_logins_rust_future_complete_u32(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I32
+void ffi_logins_rust_future_poll_i32(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I32
+void ffi_logins_rust_future_cancel_i32(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I32
+void ffi_logins_rust_future_free_i32(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I32
+int32_t ffi_logins_rust_future_complete_i32(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_U64
+void ffi_logins_rust_future_poll_u64(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_U64
+void ffi_logins_rust_future_cancel_u64(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_U64
+void ffi_logins_rust_future_free_u64(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_U64
+uint64_t ffi_logins_rust_future_complete_u64(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_I64
+void ffi_logins_rust_future_poll_i64(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_I64
+void ffi_logins_rust_future_cancel_i64(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_I64
+void ffi_logins_rust_future_free_i64(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_I64
+int64_t ffi_logins_rust_future_complete_i64(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_F32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_F32
+void ffi_logins_rust_future_poll_f32(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_F32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_F32
+void ffi_logins_rust_future_cancel_f32(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_F32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_F32
+void ffi_logins_rust_future_free_f32(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_F32
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_F32
+float ffi_logins_rust_future_complete_f32(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_F64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_F64
+void ffi_logins_rust_future_poll_f64(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_F64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_F64
+void ffi_logins_rust_future_cancel_f64(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_F64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_F64
+void ffi_logins_rust_future_free_f64(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_F64
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_F64
+double ffi_logins_rust_future_complete_f64(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_POINTER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_POINTER
+void ffi_logins_rust_future_poll_pointer(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_POINTER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_POINTER
+void ffi_logins_rust_future_cancel_pointer(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_POINTER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_POINTER
+void ffi_logins_rust_future_free_pointer(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_POINTER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_POINTER
+void*_Nonnull ffi_logins_rust_future_complete_pointer(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_RUST_BUFFER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_RUST_BUFFER
+void ffi_logins_rust_future_poll_rust_buffer(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_RUST_BUFFER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_RUST_BUFFER
+void ffi_logins_rust_future_cancel_rust_buffer(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_RUST_BUFFER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_RUST_BUFFER
+void ffi_logins_rust_future_free_rust_buffer(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_RUST_BUFFER
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_RUST_BUFFER
+RustBuffer ffi_logins_rust_future_complete_rust_buffer(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_VOID
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_POLL_VOID
+void ffi_logins_rust_future_poll_void(uint64_t handle, UniffiRustFutureContinuationCallback _Nonnull callback, uint64_t callback_data
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_VOID
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_CANCEL_VOID
+void ffi_logins_rust_future_cancel_void(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_VOID
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_FREE_VOID
+void ffi_logins_rust_future_free_void(uint64_t handle
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_VOID
+#define UNIFFI_FFIDEF_FFI_LOGINS_RUST_FUTURE_COMPLETE_VOID
+void ffi_logins_rust_future_complete_void(uint64_t handle, RustCallStatus *_Nonnull out_status
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_CHECK_CANARY
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_CHECK_CANARY
+uint16_t uniffi_logins_checksum_func_check_canary(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_CREATE_CANARY
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_CREATE_CANARY
+uint16_t uniffi_logins_checksum_func_create_canary(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_CREATE_KEY
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_CREATE_KEY
+uint16_t uniffi_logins_checksum_func_create_key(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_DECRYPT_FIELDS
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_DECRYPT_FIELDS
+uint16_t uniffi_logins_checksum_func_decrypt_fields(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_DECRYPT_LOGIN
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_DECRYPT_LOGIN
+uint16_t uniffi_logins_checksum_func_decrypt_login(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_ENCRYPT_FIELDS
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_ENCRYPT_FIELDS
+uint16_t uniffi_logins_checksum_func_encrypt_fields(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_ENCRYPT_LOGIN
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_FUNC_ENCRYPT_LOGIN
+uint16_t uniffi_logins_checksum_func_encrypt_login(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_ADD
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_ADD
+uint16_t uniffi_logins_checksum_method_loginstore_add(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_ADD_OR_UPDATE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_ADD_OR_UPDATE
+uint16_t uniffi_logins_checksum_method_loginstore_add_or_update(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_DELETE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_DELETE
+uint16_t uniffi_logins_checksum_method_loginstore_delete(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_FIND_LOGIN_TO_UPDATE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_FIND_LOGIN_TO_UPDATE
+uint16_t uniffi_logins_checksum_method_loginstore_find_login_to_update(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_GET
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_GET
+uint16_t uniffi_logins_checksum_method_loginstore_get(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_GET_BY_BASE_DOMAIN
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_GET_BY_BASE_DOMAIN
+uint16_t uniffi_logins_checksum_method_loginstore_get_by_base_domain(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_LIST
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_LIST
+uint16_t uniffi_logins_checksum_method_loginstore_list(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_REGISTER_WITH_SYNC_MANAGER
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_REGISTER_WITH_SYNC_MANAGER
+uint16_t uniffi_logins_checksum_method_loginstore_register_with_sync_manager(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_RESET
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_RESET
+uint16_t uniffi_logins_checksum_method_loginstore_reset(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_TOUCH
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_TOUCH
+uint16_t uniffi_logins_checksum_method_loginstore_touch(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_UPDATE
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_UPDATE
+uint16_t uniffi_logins_checksum_method_loginstore_update(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_WIPE_LOCAL
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_METHOD_LOGINSTORE_WIPE_LOCAL
+uint16_t uniffi_logins_checksum_method_loginstore_wipe_local(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_CONSTRUCTOR_LOGINSTORE_NEW
+#define UNIFFI_FFIDEF_UNIFFI_LOGINS_CHECKSUM_CONSTRUCTOR_LOGINSTORE_NEW
+uint16_t uniffi_logins_checksum_constructor_loginstore_new(void
+    
+);
+#endif
+#ifndef UNIFFI_FFIDEF_FFI_LOGINS_UNIFFI_CONTRACT_VERSION
+#define UNIFFI_FFIDEF_FFI_LOGINS_UNIFFI_CONTRACT_VERSION
+uint32_t ffi_logins_uniffi_contract_version(void
+    
+);
+#endif
+

@@ -10,7 +10,7 @@ typealias LoginsStoreError = LoginsApiError
 
 /*
  ** We probably should have this class go away eventually as it's really only a thin wrapper
- * similar to its kotlin equiavlent, however the only thing preventing this from being removed is
+ * similar to its kotlin equivalents, however the only thing preventing this from being removed is
  * the queue.sync which we should be moved over to the consumer side of things
  */
 open class LoginsStorage {
@@ -19,21 +19,6 @@ open class LoginsStorage {
 
     public init(databasePath: String) throws {
         store = try LoginStore(path: databasePath)
-    }
-
-    /// Delete all locally stored login sync metadata. It's unclear if
-    /// there's ever a reason for users to call this
-    open func reset() throws {
-        try queue.sync {
-            try self.store.reset()
-        }
-    }
-
-    /// Delete all locally stored login data.
-    open func wipe() throws {
-        try queue.sync {
-            try self.store.wipe()
-        }
     }
 
     open func wipeLocal() throws {
@@ -103,39 +88,4 @@ open class LoginsStorage {
             self.store.registerWithSyncManager()
         }
     }
-
-    open func sync(unlockInfo: SyncUnlockInfo) throws -> String {
-        return try queue.sync {
-            try self.store
-                .sync(
-                    keyId: unlockInfo.kid,
-                    accessToken: unlockInfo.fxaAccessToken,
-                    syncKey: unlockInfo.syncKey,
-                    tokenserverUrl: unlockInfo.tokenserverURL,
-                    localEncryptionKey: unlockInfo.loginEncryptionKey
-                )
-        }
-    }
-}
-
-public func migrateLoginsFromSqlcipher(
-    path: String,
-    newEncryptionKey: String,
-    sqlcipherPath: String,
-    sqlcipherKey: String,
-    salt: String
-) -> Bool {
-    var didMigrationSucceed = false
-
-    if (try? migrateLogins(
-        path: path,
-        newEncryptionKey: newEncryptionKey,
-        sqlcipherPath: sqlcipherPath,
-        sqlcipherKey: sqlcipherKey,
-        salt: salt
-    )) != nil {
-        didMigrationSucceed = true
-    }
-
-    return didMigrationSucceed
 }

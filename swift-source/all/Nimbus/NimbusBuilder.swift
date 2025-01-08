@@ -97,7 +97,7 @@ public class NimbusBuilder {
     var onCreateCallback: ((NimbusInterface) -> Void)?
 
     /**
-     * Optional callback to be called after the calculatoin of new enrollments and applying of changes to
+     * Optional callback to be called after the calculation of new enrollments and applying of changes to
      * experiments recipes.
      */
     @discardableResult
@@ -107,6 +107,18 @@ public class NimbusBuilder {
     }
 
     var onApplyCallback: ((NimbusInterface) -> Void)?
+
+    /**
+     * Optional callback to be called after the fetch of new experiments has completed.
+     * experiments recipes.
+     */
+    @discardableResult
+    public func onFetch(callback: @escaping (NimbusInterface) -> Void) -> NimbusBuilder {
+        onFetchCallback = callback
+        return self
+    }
+
+    var onFetchCallback: ((NimbusInterface) -> Void)?
 
     /**
      * Resource bundles used to look up bundled text and images. Defaults to `[Bundle.main]`.
@@ -120,7 +132,7 @@ public class NimbusBuilder {
     var resourceBundles: [Bundle] = [.main]
 
     /**
-     * The object generated from the `nimbus.fml.yaml` file and the nimbus-gradle-plugin.
+     * The object generated from the `nimbus.fml.yaml` file.
      */
     @discardableResult
     public func with(featureManifest: FeatureManifestInterface) -> NimbusBuilder {
@@ -130,6 +142,43 @@ public class NimbusBuilder {
 
     var featureManifest: FeatureManifestInterface?
 
+    /**
+     * Main user defaults for the app.
+     */
+    @discardableResult
+    public func with(userDefaults: UserDefaults) -> NimbusBuilder {
+        self.userDefaults = userDefaults
+        return self
+    }
+
+    var userDefaults = UserDefaults.standard
+
+    /**
+     * The command line arguments for the app. This is useful for QA, and can be safely left in the app in production.
+     */
+    @discardableResult
+    public func with(commandLineArgs: [String]) -> NimbusBuilder {
+        self.commandLineArgs = commandLineArgs
+        return self
+    }
+
+    var commandLineArgs: [String]?
+
+    /**
+     * An optional RecordedContext object.
+     *
+     * When provided, its JSON contents will be added to the Nimbus targeting context, and its value will be published
+     * to Glean.
+     */
+    @discardableResult
+    public func with(recordedContext: RecordedContext?) -> Self {
+        self.recordedContext = recordedContext
+        return self
+    }
+
+    var recordedContext: RecordedContext?
+
+    // swiftlint:disable function_body_length
     /**
      * Build a [Nimbus] singleton for the given [NimbusAppSettings]. Instances built with this method
      * have been initialized, and are ready for use by the app.
@@ -166,14 +215,29 @@ public class NimbusBuilder {
                 }
             }
 
-            let job: Operation
-            if let file = initialExperiments, isFirstRun || serverSettings == nil {
-                job = nimbus.applyLocalExperiments(fileURL: file)
-            } else {
-                job = nimbus.applyPendingExperiments()
+            if let callback = onFetchCallback {
+                NotificationCenter.default.addObserver(forName: .nimbusExperimentsFetched,
+                                                       object: nil,
+                                                       queue: nil)
+                { _ in
+                    callback(nimbus)
+                }
             }
 
-            _ = job.joinOrTimeout(timeout: timeoutLoadingExperiment)
+            // Is the app being built locally, and the nimbus-cli
+            // hasn't been used before this run.
+            func isLocalBuild() -> Bool {
+                serverSettings == nil && nimbus.isFetchEnabled()
+            }
+
+            if let args = ArgumentProcessor.createCommandLineArgs(args: commandLineArgs) {
+                ArgumentProcessor.initializeTooling(nimbus: nimbus, args: args)
+            } else if let file = initialExperiments, isFirstRun || isLocalBuild() {
+                let job = nimbus.applyLocalExperiments(fileURL: file)
+                _ = job.joinOrTimeout(timeout: timeoutLoadingExperiment)
+            } else {
+                nimbus.applyPendingExperiments().waitUntilFinished()
+            }
 
             // By now, on this thread, we have a fully initialized Nimbus object, ready for use:
             // * we gave a 200ms timeout to the loading of a file from res/raw
@@ -189,9 +253,21 @@ public class NimbusBuilder {
         }
     }
 
+    // swiftlint:enable function_body_length
+
+    func getCoenrollingFeatureIds() -> [String] {
+        featureManifest?.getCoenrollingFeatureIds() ?? []
+    }
+
     func newNimbus(_ appInfo: NimbusAppSettings, serverSettings: NimbusServerSettings?) throws -> NimbusInterface {
-        try Nimbus.create(serverSettings, appSettings: appInfo, dbPath: dbFilePath,
-                          resourceBundles: resourceBundles, errorReporter: errorReporter)
+        try Nimbus.create(serverSettings,
+                          appSettings: appInfo,
+                          coenrollingFeatureIds: getCoenrollingFeatureIds(),
+                          dbPath: dbFilePath,
+                          resourceBundles: resourceBundles,
+                          userDefaults: userDefaults,
+                          errorReporter: errorReporter,
+                          recordedContext: recordedContext)
     }
 
     func newNimbusDisabled() -> NimbusInterface {

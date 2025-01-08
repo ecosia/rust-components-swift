@@ -251,19 +251,19 @@ open class MZKeychainWrapper {
     // MARK: Public Setters
 
     @discardableResult open func set(_ value: Int, forKey key: String, withAccessibility accessibility: MZKeychainItemAccessibility? = nil, isSynchronizable: Bool = false) -> Bool {
-        return set(Int(truncating: NSNumber(value: value)), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
+        return set(NSNumber(value: value), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
     }
 
     @discardableResult open func set(_ value: Float, forKey key: String, withAccessibility accessibility: MZKeychainItemAccessibility? = nil, isSynchronizable: Bool = false) -> Bool {
-        return set(Int(truncating: NSNumber(value: value)), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
+        return set(NSNumber(value: value), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
     }
 
     @discardableResult open func set(_ value: Double, forKey key: String, withAccessibility accessibility: MZKeychainItemAccessibility? = nil, isSynchronizable: Bool = false) -> Bool {
-        return set(Int(truncating: NSNumber(value: value)), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
+        return set(NSNumber(value: value), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
     }
 
     @discardableResult open func set(_ value: Bool, forKey key: String, withAccessibility accessibility: MZKeychainItemAccessibility? = nil, isSynchronizable: Bool = false) -> Bool {
-        return set(Int(truncating: NSNumber(value: value)), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
+        return set(NSNumber(value: value), forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
     }
 
     /// Save a String value to the keychain associated with a specified key. If a String value already exists for the given key, the string will be overwritten with the new value.
@@ -332,7 +332,7 @@ open class MZKeychainWrapper {
         return removeObject(forKey: key, withAccessibility: accessibility, isSynchronizable: isSynchronizable)
     }
 
-    /// Remove an object associated with a specified key. If re-using a key but with a different accessibility, first remove the previous key value using removeObjectForKey(:withAccessibility) using the same accessibilty it was saved with.
+    /// Remove an object associated with a specified key. If re-using a key but with a different accessibility, first remove the previous key value using removeObjectForKey(:withAccessibility) using the same accessibility it was saved with.
     ///
     /// - parameter forKey: The key value to remove data for.
     /// - parameter withAccessibility: Optional accessibility level to use when looking up the keychain item.
@@ -346,7 +346,7 @@ open class MZKeychainWrapper {
         return status == errSecSuccess
     }
 
-    /// Remove all keychain data added through KeychainWrapper. This will only delete items matching the currnt ServiceName and AccessGroup if one is set.
+    /// Remove all keychain data added through KeychainWrapper. This will only delete items matching the current ServiceName and AccessGroup if one is set.
     @discardableResult open func removeAllKeys() -> Bool {
         // Setup dictionary to access keychain and specify we are using a generic password (rather than a certificate, internet password, etc)
         var keychainQueryDictionary: [String: Any] = [SecClass: kSecClassGenericPassword]

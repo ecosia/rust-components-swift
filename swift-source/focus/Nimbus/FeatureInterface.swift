@@ -7,6 +7,8 @@ import Foundation
 ///
 /// This is intended to be standalone to allow for testing the Nimbus FML.
 public protocol FeaturesInterface: AnyObject {
+    var userDefaults: UserDefaults? { get }
+
     /// Get the variables needed to configure the feature given by `featureId`.
     ///
     /// - Parameters:
@@ -46,7 +48,7 @@ public protocol FeaturesInterface: AnyObject {
     /// - Parameter featureId string representing the id of the feature for which to record the exposure
     ///     event.
     ///
-    func recordExposureEvent(featureId: String)
+    func recordExposureEvent(featureId: String, experimentSlug: String?)
 
     /// Records an event signifying a malformed feature configuration, or part of one.
     ///
@@ -55,4 +57,10 @@ public protocol FeaturesInterface: AnyObject {
     /// - Parameter partId string representing the card id or message id of the part of the feature that
     ///     is malformed, providing more detail to experiment owners of where to look for the problem.
     func recordMalformedConfiguration(featureId: String, with partId: String)
+}
+
+public extension FeaturesInterface {
+    var userDefaults: UserDefaults? {
+        nil
+    }
 }

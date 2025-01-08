@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
+import Glean
 import UIKit
 
 private let logTag = "Nimbus.swift"
@@ -15,6 +16,50 @@ public let defaultErrorReporter: NimbusErrorReporter = { err in
         logger.error("Nimbus error: \(description)")
     default:
         logger.error("Nimbus error: \(err)")
+    }
+}
+
+class GleanMetricsHandler: MetricsHandler {
+    func recordEnrollmentStatuses(enrollmentStatusExtras: [EnrollmentStatusExtraDef]) {
+        for extra in enrollmentStatusExtras {
+            GleanMetrics.NimbusEvents.enrollmentStatus
+                .record(GleanMetrics.NimbusEvents.EnrollmentStatusExtra(
+                    branch: extra.branch,
+                    conflictSlug: extra.conflictSlug,
+                    errorString: extra.errorString,
+                    reason: extra.reason,
+                    slug: extra.slug,
+                    status: extra.status
+                ))
+        }
+    }
+
+    func recordFeatureActivation(event: FeatureExposureExtraDef) {
+        GleanMetrics.NimbusEvents.activation
+            .record(GleanMetrics.NimbusEvents.ActivationExtra(
+                branch: event.branch,
+                experiment: event.slug,
+                featureId: event.featureId
+            ))
+    }
+
+    func recordFeatureExposure(event: FeatureExposureExtraDef) {
+        GleanMetrics.NimbusEvents.exposure
+            .record(GleanMetrics.NimbusEvents.ExposureExtra(
+                branch: event.branch,
+                experiment: event.slug,
+                featureId: event.featureId
+            ))
+    }
+
+    func recordMalformedFeatureConfig(event: MalformedFeatureConfigExtraDef) {
+        GleanMetrics.NimbusEvents.malformedFeature
+            .record(GleanMetrics.NimbusEvents.MalformedFeatureExtra(
+                branch: event.branch,
+                experiment: event.slug,
+                featureId: event.featureId,
+                partId: event.part
+            ))
     }
 }
 
@@ -34,10 +79,13 @@ public extension Nimbus {
     static func create(
         _ server: NimbusServerSettings?,
         appSettings: NimbusAppSettings,
+        coenrollingFeatureIds: [String] = [],
         dbPath: String,
         resourceBundles: [Bundle] = [Bundle.main],
         enabled: Bool = true,
-        errorReporter: @escaping NimbusErrorReporter = defaultErrorReporter
+        userDefaults: UserDefaults? = nil,
+        errorReporter: @escaping NimbusErrorReporter = defaultErrorReporter,
+        recordedContext: RecordedContext? = nil
     ) throws -> NimbusInterface {
         guard enabled else {
             return NimbusDisabled.shared
@@ -46,20 +94,25 @@ public extension Nimbus {
         let context = Nimbus.buildExperimentContext(appSettings)
         let remoteSettings = server.map { server -> RemoteSettingsConfig in
             RemoteSettingsConfig(
-                serverUrl: server.url.absoluteString,
-                collectionName: server.collection
+                collectionName: server.collection,
+                server: .custom(url: server.url.absoluteString)
             )
         }
         let nimbusClient = try NimbusClient(
             appCtx: context,
+            recordedContext: recordedContext,
+            coenrollingFeatureIds: coenrollingFeatureIds,
             dbpath: dbPath,
             remoteSettingsConfig: remoteSettings,
-            // The "dummy" field here is required for obscure reasons when generating code on desktop,
-            // so we just automatically set it to a dummy value.
-            availableRandomizationUnits: AvailableRandomizationUnits(clientId: nil, dummy: 0)
+            metricsHandler: GleanMetricsHandler()
         )
 
-        return Nimbus(nimbusClient: nimbusClient, resourceBundles: resourceBundles, errorReporter: errorReporter)
+        return Nimbus(
+            nimbusClient: nimbusClient,
+            resourceBundles: resourceBundles,
+            userDefaults: userDefaults,
+            errorReporter: errorReporter
+        )
     }
 
     static func buildExperimentContext(

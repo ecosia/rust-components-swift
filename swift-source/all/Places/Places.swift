@@ -5,8 +5,8 @@
 import Foundation
 import os.log
 
-internal typealias UniffiPlacesApi = PlacesApi
-internal typealias UniffiPlacesConnection = PlacesConnection
+typealias UniffiPlacesApi = PlacesApi
+typealias UniffiPlacesConnection = PlacesConnection
 
 /**
  * This is specifically for throwing when there is
@@ -67,105 +67,6 @@ public class PlacesAPI {
     open func getWriter() -> PlacesWriteConnection {
         return queue.sync {
             self.writeConn
-        }
-    }
-
-    /**
-     * Sync the bookmarks collection.
-     *
-     * - Returns: A JSON string representing a telemetry ping for this sync. The
-     *            string contains the ping payload, and should be sent to the
-     *            telemetry submission endpoint.
-     *
-     * - Throws:
-     *     - `PlacesApiError.databaseInterrupted`: If a call is made to `interrupt()` on this
-     *                                             object from another thread.
-     *     - `PlacesApiError.unexpected`: When an error that has not specifically been exposed
-     *                                    to Swift is encountered (for example IO errors from
-     *                                    the database code, etc).
-     *     - `PlacesApiError.panic`: If the rust code panics while completing this
-     *                               operation. (If this occurs, please let us know).
-     */
-    open func syncBookmarks(unlockInfo: SyncUnlockInfo) throws -> String {
-        return try queue.sync {
-            try self.api.bookmarksSync(
-                keyId: unlockInfo.kid,
-                accessToken: unlockInfo.fxaAccessToken,
-                syncKey: unlockInfo.syncKey,
-                tokenserverUrl: unlockInfo.tokenserverURL
-            )
-        }
-    }
-
-    /**
-     * Sync the History collection.
-     *
-     * - Returns: A JSON string representing a telemetry ping for this sync. The
-     *            string contains the ping payload, and should be sent to the
-     *            telemetry submission endpoint.
-     *
-     * - Throws:
-     *     - `PlacesApiError.databaseInterrupted`: If a call is made to `interrupt()` on this
-     *                                             object from another thread.
-     *     - `PlacesApiError.unexpected`: When an error that has not specifically been exposed
-     *                                    to Swift is encountered (for example IO errors from
-     *                                    the database code, etc).
-     *     - `PlacesApiError.panic`: If the rust code panics while completing this
-     *                               operation. (If this occurs, please let us know).
-     */
-    open func syncHistory(unlockInfo: SyncUnlockInfo) throws -> String {
-        return try queue.sync {
-            try self.api.historySync(
-                keyId: unlockInfo.kid,
-                accessToken: unlockInfo.fxaAccessToken,
-                syncKey: unlockInfo.syncKey,
-                tokenserverUrl: unlockInfo.tokenserverURL
-            )
-        }
-    }
-
-    /**
-     * Resets all sync metadata for history, including change flags,
-     * sync statuses, and last sync time. The next sync after reset
-     * will behave the same way as a first sync when connecting a new
-     * device.
-     *
-     * This method only needs to be called when the user disconnects
-     * from Sync. There are other times when Places resets sync metadata,
-     * but those are handled internally in the Rust code.
-     *
-     * - Throws:
-     *     - `PlacesApiError.databaseInterrupted`: If a call is made to `interrupt()` on this
-     *                                             object from another thread.
-     *     - `PlacesApiError.unexpected`: When an error that has not specifically been exposed
-     *                                    to Swift is encountered (for example IO errors from
-     *                                    the database code, etc).
-     *     - `PlacesApiError.panic`: If the rust code panics while completing this
-     *                               operation. (If this occurs, please let us know).
-     */
-    open func resetHistorySyncMetadata() throws {
-        return try queue.sync {
-            try self.api.resetHistory()
-        }
-    }
-
-    /**
-     * Resets all sync metadata for bookmarks, including change flags, sync statuses, and
-     * last sync time. The next sync after reset will behave the same way as a first sync
-     * when connecting a new device.
-     *
-     * - Throws:
-     *     - `PlacesApiError.databaseInterrupted`: If a call is made to `interrupt()` on this
-     *                                             object from another thread.
-     *     - `PlacesApiError.unexpected`: When an error that has not specifically been exposed
-     *                                    to Swift is encountered (for example IO errors from
-     *                                    the database code, etc).
-     *     - `PlacesApiError.panic`: If the rust code panics while completing this
-     *                               operation. (If this occurs, please let us know).
-     */
-    open func resetBookmarkSyncMetadata() throws {
-        return try queue.sync {
-            try self.api.bookmarksReset()
         }
     }
 
@@ -398,6 +299,37 @@ public class PlacesReadConnection {
         }
     }
 
+    /**
+     * Counts the number of bookmark items in the bookmark trees under the specified GUIDs.
+     * Empty folders, non-existing GUIDs and non-folder guids will return zero.
+     *
+     * - Parameter folderGuids: The guids of folders to query.
+     * - Returns: Count of all bookmark items (ie, not folders or separators) in all specified folders recursively.
+     * - Throws:
+     *     - `PlacesApiError.databaseInterrupted`: If a call is made to
+     *                                             `interrupt()` on this object
+     *                                             from another thread.
+     *     - `PlacesConnectionError.connUseAfterAPIClosed`: If the PlacesAPI that returned
+     *                                                      this connection object has
+     *                                                      been closed. This indicates
+     *                                                      API misuse.
+     *     - `PlacesApiError.databaseBusy`: If this query times out with a
+     *                                      SQLITE_BUSY error.
+     *     - `PlacesApiError.unexpected`: When an error that has not specifically
+     *                                    been exposed to Swift is encountered (for
+     *                                    example IO errors from the database code,
+     *                                    etc).
+     *     - `PlacesApiError.panic`: If the rust code panics while completing this
+     *                               operation. (If this occurs, please let us
+     *                               know).
+     */
+    open func countBookmarksInTrees(folderGuids: [Guid]) throws -> Int {
+        return try queue.sync {
+            try self.checkApi()
+            return try Int(self.conn.bookmarksCountBookmarksInTrees(folderGuids: folderGuids))
+        }
+    }
+
     open func getLatestHistoryMetadataForUrl(url: Url) throws -> HistoryMetadata? {
         return try queue.sync {
             try self.checkApi()
@@ -537,7 +469,7 @@ public class PlacesWriteConnection: PlacesReadConnection {
      * - Deleting older visits when the database exceeds dbSizeLimit
      * - etc.
      *
-     * Maintanance in performed in small chunks at a time to avoid blocking the
+     * Maintenance in performed in small chunks at a time to avoid blocking the
      * DB connection for too long.  This means that this should be called
      * regularly when the app is idle.
      *
@@ -561,7 +493,10 @@ public class PlacesWriteConnection: PlacesReadConnection {
     open func runMaintenance(dbSizeLimit: UInt32 = 0) throws {
         return try queue.sync {
             try self.checkApi()
-            _ = try self.conn.runMaintenancePrune(dbSizeLimit: dbSizeLimit)
+            // The Kotlin code uses a higher pruneLimit, while Swift is extra conservative.  The
+            // main reason for this is the v119 places incident.  Once we figure that one out more,
+            // let's increase the prune limit here as well.
+            _ = try self.conn.runMaintenancePrune(dbSizeLimit: dbSizeLimit, pruneLimit: 6)
             try self.conn.runMaintenanceVacuum()
             try self.conn.runMaintenanceOptimize()
             try self.conn.runMaintenanceCheckpoint()
@@ -796,44 +731,57 @@ public class PlacesWriteConnection: PlacesReadConnection {
     // MARK: History metadata write APIs
 
     open func noteHistoryMetadataObservation(
-        observation: HistoryMetadataObservation
+        observation: HistoryMetadataObservation,
+        _ options: NoteHistoryMetadataObservationOptions = NoteHistoryMetadataObservationOptions()
     ) throws {
         try queue.sync {
             try self.checkApi()
-            try self.conn.noteHistoryMetadataObservation(data: observation)
+            try self.conn.noteHistoryMetadataObservation(data: observation, options: options)
         }
     }
 
     // Keeping these three functions inline with what Kotlin (PlacesConnection.kt)
     // to make future work more symmetrical
-    open func noteHistoryMetadataObservationViewTime(key: HistoryMetadataKey, viewTime: Int32?) throws {
+    open func noteHistoryMetadataObservationViewTime(
+        key: HistoryMetadataKey,
+        viewTime: Int32?,
+        _ options: NoteHistoryMetadataObservationOptions = NoteHistoryMetadataObservationOptions()
+    ) throws {
         let obs = HistoryMetadataObservation(
             url: key.url,
             referrerUrl: key.referrerUrl,
             searchTerm: key.searchTerm,
             viewTime: viewTime
         )
-        try noteHistoryMetadataObservation(observation: obs)
+        try noteHistoryMetadataObservation(observation: obs, options)
     }
 
-    open func noteHistoryMetadataObservationDocumentType(key: HistoryMetadataKey, documentType: DocumentType) throws {
+    open func noteHistoryMetadataObservationDocumentType(
+        key: HistoryMetadataKey,
+        documentType: DocumentType,
+        _ options: NoteHistoryMetadataObservationOptions = NoteHistoryMetadataObservationOptions()
+    ) throws {
         let obs = HistoryMetadataObservation(
             url: key.url,
             referrerUrl: key.referrerUrl,
             searchTerm: key.searchTerm,
             documentType: documentType
         )
-        try noteHistoryMetadataObservation(observation: obs)
+        try noteHistoryMetadataObservation(observation: obs, options)
     }
 
-    open func noteHistoryMetadataObservationTitle(key: HistoryMetadataKey, title: String) throws {
+    open func noteHistoryMetadataObservationTitle(
+        key: HistoryMetadataKey,
+        title: String,
+        _ options: NoteHistoryMetadataObservationOptions = NoteHistoryMetadataObservationOptions()
+    ) throws {
         let obs = HistoryMetadataObservation(
             url: key.url,
             referrerUrl: key.referrerUrl,
             searchTerm: key.searchTerm,
             title: title
         )
-        try noteHistoryMetadataObservation(observation: obs)
+        try noteHistoryMetadataObservation(observation: obs, options)
     }
 
     open func deleteHistoryMetadataOlderThan(olderThan: Int64) throws {
@@ -877,24 +825,10 @@ public class PlacesWriteConnection: PlacesReadConnection {
         }
     }
 
-    open func wipeLocalHistory() throws {
-        try queue.sync {
-            try self.checkApi()
-            try self.conn.wipeLocalHistory()
-        }
-    }
-
     open func deleteEverythingHistory() throws {
         try queue.sync {
             try self.checkApi()
             try self.conn.deleteEverythingHistory()
-        }
-    }
-
-    open func pruneDestructively() throws {
-        try queue.sync {
-            try self.checkApi()
-            try self.conn.pruneDestructively()
         }
     }
 

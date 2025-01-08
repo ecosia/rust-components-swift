@@ -6,6 +6,8 @@ import Foundation
 import Glean
 
 public class Nimbus: NimbusInterface {
+    private let _userDefaults: UserDefaults?
+
     private let nimbusClient: NimbusClientProtocol
 
     private let resourceBundles: [Bundle]
@@ -26,13 +28,15 @@ public class Nimbus: NimbusInterface {
         return queue
     }()
 
-    internal init(nimbusClient: NimbusClientProtocol,
-                  resourceBundles: [Bundle],
-                  errorReporter: @escaping NimbusErrorReporter)
+    init(nimbusClient: NimbusClientProtocol,
+         resourceBundles: [Bundle],
+         userDefaults: UserDefaults?,
+         errorReporter: @escaping NimbusErrorReporter)
     {
         self.errorReporter = errorReporter
         self.nimbusClient = nimbusClient
         self.resourceBundles = resourceBundles
+        _userDefaults = userDefaults
         NilVariables.instance.set(bundles: resourceBundles)
     }
 }
@@ -72,10 +76,6 @@ extension Nimbus: NimbusQueues {
 }
 
 extension Nimbus: NimbusEventStore {
-    public var events: NimbusEventStore {
-        self
-    }
-
     public func recordEvent(_ eventId: String) {
         recordEvent(1, eventId)
     }
@@ -90,6 +90,10 @@ extension Nimbus: NimbusEventStore {
         try nimbusClient.recordPastEvent(eventId: eventId, secondsAgo: Int64(timeAgo), count: Int64(count))
     }
 
+    public func advanceEventTime(by duration: TimeInterval) throws {
+        try nimbusClient.advanceEventTime(bySeconds: Int64(duration))
+    }
+
     public func clearEvents() {
         _ = catchAll(dbQueue) { _ in
             try self.nimbusClient.clearEvents()
@@ -98,45 +102,25 @@ extension Nimbus: NimbusEventStore {
 }
 
 extension Nimbus: FeaturesInterface {
-    public func recordExposureEvent(featureId: String) {
-        // First, we get the enrolled feature, if there is one, for this id.
-        if let enrollment = getEnrollmentByFeature(featureId: featureId),
-           // If branch is nil, this is a rollout, and we're not interested in recording
-           // exposure for rollouts.
-           let branch = enrollment.branch
-        {
-            // Finally, if we do have an experiment for the given featureId, we will record the
-            // exposure event in Glean. This is to protect against accidentally recording an event
-            // for an experiment without an active enrollment.
-            GleanMetrics.NimbusEvents.exposure.record(GleanMetrics.NimbusEvents.ExposureExtra(
-                branch: branch,
-                experiment: enrollment.slug
-            ))
+    public var userDefaults: UserDefaults? {
+        _userDefaults
+    }
+
+    public func recordExposureEvent(featureId: String, experimentSlug: String? = nil) {
+        catchAll {
+            nimbusClient.recordFeatureExposure(featureId: featureId, slug: experimentSlug)
         }
     }
 
     public func recordMalformedConfiguration(featureId: String, with partId: String) {
-        // First, we get the enrolled feature, if there is one, for this id.
-        let enrollment = getEnrollmentByFeature(featureId: featureId)
-        // If the enrollment is nil, then that's the most serious: we've shipped invalid FML,
-        // If the branch is nil, then this is also serious: we've shipped an invalid rollout.
-        GleanMetrics.NimbusEvents.malformedFeature.record(GleanMetrics.NimbusEvents.MalformedFeatureExtra(
-            branch: enrollment?.branch,
-            experiment: enrollment?.slug,
-            featureId: featureId,
-            partId: partId
-        ))
-    }
-
-    internal func getEnrollmentByFeature(featureId: String) -> EnrolledFeature? {
-        return catchAll {
-            try nimbusClient.getEnrollmentByFeature(featureId: featureId)
+        catchAll {
+            nimbusClient.recordMalformedFeatureConfig(featureId: featureId, partId: partId)
         }
     }
 
-    internal func postEnrollmentCalculation(_ events: [EnrollmentChangeEvent]) {
+    func postEnrollmentCalculation(_ events: [EnrollmentChangeEvent]) {
         // We need to update the experiment enrollment annotations in Glean
-        // regardless of whether we recieved any events. Calling the
+        // regardless of whether we received any events. Calling the
         // `setExperimentActive` function multiple times with the same
         // experiment id is safe so nothing bad should happen in case we do.
         let experiments = getActiveExperiments()
@@ -149,38 +133,34 @@ extension Nimbus: FeaturesInterface {
         notifyOnExperimentsApplied(experiments)
     }
 
-    internal func recordExperimentTelemetry(_ experiments: [EnrolledExperiment]) {
+    func recordExperimentTelemetry(_ experiments: [EnrolledExperiment]) {
         for experiment in experiments {
             Glean.shared.setExperimentActive(
                 experiment.slug,
                 branch: experiment.branchSlug,
-                extra: ["enrollmentId": experiment.enrollmentId]
+                extra: nil
             )
         }
     }
 
-    internal func recordExperimentEvents(_ events: [EnrollmentChangeEvent]) {
+    func recordExperimentEvents(_ events: [EnrollmentChangeEvent]) {
         for event in events {
             switch event.change {
             case .enrollment:
                 GleanMetrics.NimbusEvents.enrollment.record(GleanMetrics.NimbusEvents.EnrollmentExtra(
                     branch: event.branchSlug,
-                    enrollmentId: event.enrollmentId,
                     experiment: event.experimentSlug
                 ))
             case .disqualification:
                 GleanMetrics.NimbusEvents.disqualification.record(GleanMetrics.NimbusEvents.DisqualificationExtra(
                     branch: event.branchSlug,
-                    enrollmentId: event.enrollmentId,
                     experiment: event.experimentSlug
                 ))
             case .unenrollment:
                 GleanMetrics.NimbusEvents.unenrollment.record(GleanMetrics.NimbusEvents.UnenrollmentExtra(
                     branch: event.branchSlug,
-                    enrollmentId: event.enrollmentId,
                     experiment: event.experimentSlug
                 ))
-
             case .enrollFailed:
                 GleanMetrics.NimbusEvents.enrollFailed.record(GleanMetrics.NimbusEvents.EnrollFailedExtra(
                     branch: event.branchSlug,
@@ -196,7 +176,7 @@ extension Nimbus: FeaturesInterface {
         }
     }
 
-    internal func getFeatureConfigVariablesJson(featureId: String) -> [String: Any]? {
+    func getFeatureConfigVariablesJson(featureId: String) -> [String: Any]? {
         do {
             guard let string = try nimbusClient.getFeatureConfigVariables(featureId: featureId) else {
                 return nil
@@ -241,7 +221,7 @@ private extension Nimbus {
 /*
  * Methods split out onto a separate internal extension for testing purposes.
  */
-internal extension Nimbus {
+extension Nimbus {
     func setGlobalUserParticipationOnThisThread(_ value: Bool) throws {
         let changes = try nimbusClient.setGlobalUserParticipation(optIn: value)
         postEnrollmentCalculation(changes)
@@ -279,8 +259,8 @@ internal extension Nimbus {
         postEnrollmentCalculation(changes)
     }
 
-    func resetTelemetryIdentifiersOnThisThread(_ identifiers: AvailableRandomizationUnits) throws {
-        let changes = try nimbusClient.resetTelemetryIdentifiers(newRandomizationUnits: identifiers)
+    func resetTelemetryIdentifiersOnThisThread() throws {
+        let changes = try nimbusClient.resetTelemetryIdentifiers()
         postEnrollmentCalculation(changes)
     }
 }
@@ -329,10 +309,7 @@ extension Nimbus: NimbusUserConfiguration {
 
     public func resetTelemetryIdentifiers() {
         _ = catchAll(dbQueue) { _ in
-            // The "dummy" field here is required for obscure reasons when generating code on desktop,
-            // so we just automatically set it to a dummy value.
-            let aru = AvailableRandomizationUnits(clientId: nil, dummy: 0)
-            try self.resetTelemetryIdentifiersOnThisThread(aru)
+            try self.resetTelemetryIdentifiersOnThisThread()
         }
     }
 }
@@ -348,6 +325,18 @@ extension Nimbus: NimbusStartup {
         _ = catchAll(fetchQueue) { _ in
             try self.fetchExperimentsOnThisThread()
         }
+    }
+
+    public func setFetchEnabled(_ enabled: Bool) {
+        _ = catchAll(fetchQueue) { _ in
+            try self.nimbusClient.setFetchEnabled(flag: enabled)
+        }
+    }
+
+    public func isFetchEnabled() -> Bool {
+        return catchAll {
+            try self.nimbusClient.isFetchEnabled()
+        } ?? true
     }
 
     public func applyPendingExperiments() -> Operation {
@@ -385,6 +374,18 @@ extension Nimbus: NimbusStartup {
             try self.setExperimentsLocallyOnThisThread(experimentsJson)
         }
     }
+
+    public func resetEnrollmentsDatabase() -> Operation {
+        catchAll(dbQueue) { _ in
+            try self.nimbusClient.resetEnrollments()
+        }
+    }
+
+    public func dumpStateToLog() {
+        catchAll {
+            try self.nimbusClient.dumpStateToLog()
+        }
+    }
 }
 
 extension Nimbus: NimbusBranchInterface {
@@ -395,17 +396,17 @@ extension Nimbus: NimbusBranchInterface {
     }
 }
 
-extension Nimbus: GleanPlumbProtocol {
-    public func createMessageHelper() throws -> GleanPlumbMessageHelper {
+extension Nimbus: NimbusMessagingProtocol {
+    public func createMessageHelper() throws -> NimbusMessagingHelperProtocol {
         return try createMessageHelper(string: nil)
     }
 
-    public func createMessageHelper(additionalContext: [String: Any]) throws -> GleanPlumbMessageHelper {
+    public func createMessageHelper(additionalContext: [String: Any]) throws -> NimbusMessagingHelperProtocol {
         let string = try additionalContext.stringify()
         return try createMessageHelper(string: string)
     }
 
-    public func createMessageHelper<T: Encodable>(additionalContext: T) throws -> GleanPlumbMessageHelper {
+    public func createMessageHelper<T: Encodable>(additionalContext: T) throws -> NimbusMessagingHelperProtocol {
         let encoder = JSONEncoder()
         encoder.keyEncodingStrategy = .convertToSnakeCase
 
@@ -414,10 +415,14 @@ extension Nimbus: GleanPlumbProtocol {
         return try createMessageHelper(string: string)
     }
 
-    private func createMessageHelper(string: String?) throws -> GleanPlumbMessageHelper {
+    private func createMessageHelper(string: String?) throws -> NimbusMessagingHelperProtocol {
         let targetingHelper = try nimbusClient.createTargetingHelper(additionalContext: string)
         let stringHelper = try nimbusClient.createStringHelper(additionalContext: string)
-        return GleanPlumbMessageHelper(targetingHelper: targetingHelper, stringHelper: stringHelper)
+        return NimbusMessagingHelper(targetingHelper: targetingHelper, stringHelper: stringHelper)
+    }
+
+    public var events: NimbusEventStore {
+        self
     }
 }
 
@@ -448,6 +453,12 @@ public extension NimbusDisabled {
 
     func fetchExperiments() {}
 
+    func setFetchEnabled(_: Bool) {}
+
+    func isFetchEnabled() -> Bool {
+        false
+    }
+
     func applyPendingExperiments() -> Operation {
         BlockOperation()
     }
@@ -460,13 +471,17 @@ public extension NimbusDisabled {
 
     func setExperimentsLocally(_: String) {}
 
+    func resetEnrollmentsDatabase() -> Operation {
+        BlockOperation()
+    }
+
     func optOut(_: String) {}
 
     func optIn(_: String, branch _: String) {}
 
     func resetTelemetryIdentifiers() {}
 
-    func recordExposureEvent(featureId _: String) {}
+    func recordExposureEvent(featureId _: String, experimentSlug _: String? = nil) {}
 
     func recordMalformedConfiguration(featureId _: String, with _: String) {}
 
@@ -476,7 +491,11 @@ public extension NimbusDisabled {
 
     func recordPastEvent(_: Int, _: String, _: TimeInterval) {}
 
+    func advanceEventTime(by _: TimeInterval) throws {}
+
     func clearEvents() {}
+
+    func dumpStateToLog() {}
 
     func getExperimentBranches(_: String) -> [Branch]? {
         return nil
@@ -487,19 +506,21 @@ public extension NimbusDisabled {
     func waitForDbQueue() {}
 }
 
-extension NimbusDisabled: GleanPlumbProtocol {
-    public func createMessageHelper() throws -> GleanPlumbMessageHelper {
-        GleanPlumbMessageHelper(
-            targetingHelper: AlwaysFalseTargetingHelper(),
-            stringHelper: NonStringHelper()
+extension NimbusDisabled: NimbusMessagingProtocol {
+    public func createMessageHelper() throws -> NimbusMessagingHelperProtocol {
+        NimbusMessagingHelper(
+            targetingHelper: AlwaysConstantTargetingHelper(),
+            stringHelper: EchoStringHelper()
         )
     }
 
-    public func createMessageHelper(additionalContext _: [String: Any]) throws -> GleanPlumbMessageHelper {
+    public func createMessageHelper(additionalContext _: [String: Any]) throws -> NimbusMessagingHelperProtocol {
         try createMessageHelper()
     }
 
-    public func createMessageHelper<T: Encodable>(additionalContext _: T) throws -> GleanPlumbMessageHelper {
+    public func createMessageHelper<T: Encodable>(additionalContext _: T) throws -> NimbusMessagingHelperProtocol {
         try createMessageHelper()
     }
+
+    public var events: NimbusEventStore { self }
 }
