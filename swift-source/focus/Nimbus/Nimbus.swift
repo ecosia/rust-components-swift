@@ -3,7 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
+/* Ecosia: Remove Glean
 import Glean
+ */
 
 public class Nimbus: NimbusInterface {
     private let _userDefaults: UserDefaults?
@@ -134,6 +136,7 @@ extension Nimbus: FeaturesInterface {
     }
 
     func recordExperimentTelemetry(_ experiments: [EnrolledExperiment]) {
+        /* Ecosia: Remove Glean
         for experiment in experiments {
             Glean.shared.setExperimentActive(
                 experiment.slug,
@@ -141,9 +144,11 @@ extension Nimbus: FeaturesInterface {
                 extra: nil
             )
         }
+         */
     }
 
     func recordExperimentEvents(_ events: [EnrollmentChangeEvent]) {
+        /* Ecosia: Remove Glean
         for event in events {
             switch event.change {
             case .enrollment:
@@ -174,6 +179,7 @@ extension Nimbus: FeaturesInterface {
                 ))
             }
         }
+         */
     }
 
     func getFeatureConfigVariablesJson(featureId: String) -> [String: Any]? {
@@ -183,11 +189,13 @@ extension Nimbus: FeaturesInterface {
             }
             return try Dictionary.parse(jsonString: string)
         } catch NimbusError.DatabaseNotReady {
+            /* Ecosia: Remove Glean
             GleanMetrics.NimbusHealth.cacheNotReadyForFeature.record(
                 GleanMetrics.NimbusHealth.CacheNotReadyForFeatureExtra(
                     featureId: featureId
                 )
             )
+             */
             return nil
         } catch {
             errorReporter(error)
@@ -232,17 +240,21 @@ extension Nimbus {
     }
 
     func fetchExperimentsOnThisThread() throws {
+        /* Ecosia: Remove Glean
         try GleanMetrics.NimbusHealth.fetchExperimentsTime.measure {
             try nimbusClient.fetchExperiments()
         }
+         */
         notifyOnExperimentsFetched()
     }
 
     func applyPendingExperimentsOnThisThread() throws {
+        /* Ecosia: Remove Glean
         let changes = try GleanMetrics.NimbusHealth.applyPendingExperimentsTime.measure {
             try nimbusClient.applyPendingExperiments()
         }
         postEnrollmentCalculation(changes)
+         */
     }
 
     func setExperimentsLocallyOnThisThread(_ experimentsJson: String) throws {

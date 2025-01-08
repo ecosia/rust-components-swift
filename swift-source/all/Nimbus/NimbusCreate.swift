@@ -3,7 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
+/* Ecosia: Remove Glean
 import Glean
+ */
 import UIKit
 
 private let logTag = "Nimbus.swift"
@@ -21,6 +23,7 @@ public let defaultErrorReporter: NimbusErrorReporter = { err in
 
 class GleanMetricsHandler: MetricsHandler {
     func recordEnrollmentStatuses(enrollmentStatusExtras: [EnrollmentStatusExtraDef]) {
+        /* Ecosia: Remove Glean
         for extra in enrollmentStatusExtras {
             GleanMetrics.NimbusEvents.enrollmentStatus
                 .record(GleanMetrics.NimbusEvents.EnrollmentStatusExtra(
@@ -32,27 +35,33 @@ class GleanMetricsHandler: MetricsHandler {
                     status: extra.status
                 ))
         }
+         */
     }
 
     func recordFeatureActivation(event: FeatureExposureExtraDef) {
+        /* Ecosia: Remove Glean
         GleanMetrics.NimbusEvents.activation
             .record(GleanMetrics.NimbusEvents.ActivationExtra(
                 branch: event.branch,
                 experiment: event.slug,
                 featureId: event.featureId
             ))
+         */
     }
 
     func recordFeatureExposure(event: FeatureExposureExtraDef) {
+        /* Ecosia: Remove Glean
         GleanMetrics.NimbusEvents.exposure
             .record(GleanMetrics.NimbusEvents.ExposureExtra(
                 branch: event.branch,
                 experiment: event.slug,
                 featureId: event.featureId
             ))
+         */
     }
 
     func recordMalformedFeatureConfig(event: MalformedFeatureConfigExtraDef) {
+        /* Ecosia: Remove Glean
         GleanMetrics.NimbusEvents.malformedFeature
             .record(GleanMetrics.NimbusEvents.MalformedFeatureExtra(
                 branch: event.branch,
@@ -60,6 +69,7 @@ class GleanMetricsHandler: MetricsHandler {
                 featureId: event.featureId,
                 partId: event.part
             ))
+         */
     }
 }
 

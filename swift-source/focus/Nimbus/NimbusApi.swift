@@ -3,7 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Foundation
+/* Ecosia: Remove Glean
 import Glean
+ */
 
 /// This is the main experiments API, which is exposed through the global [Nimbus] object.
 ///
