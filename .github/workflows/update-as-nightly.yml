@@ -2,9 +2,10 @@ name: Create a PR for release with the newest A-S version available
 
 # Controls when the workflow will run
 on:
-  schedule:
+  # Ecosia: Stop action from running
+  # schedule:
   # Runs 8:00am UTC each day
-  - cron: '0 8 * * *'
+  # - cron: '0 8 * * *'
   workflow_dispatch:
 
 jobs:
